@@ -13,7 +13,7 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v2
       with:
-        node-version: '16.x'  # This ensures Node.js version > 16.13
+        node-version: '18.x'  # This ensures Node.js version > 16.13
 
     - name: Install yarn
       run: npm install -g yarn
