@@ -10,7 +10,7 @@
     "start:dev": "nodemon | pino-pretty",
     "prettify": "prettier --write .",
     "test": "yarn db:migrate:test && dotenv -e .env.test jest",
-    "lint": "eslint .",
+    "lint": "eslint **/*.ts",
     "db:generate": "prisma migrate dev",
     "db:migrate:test": "dotenv -e .env.test yarn prisma migrate deploy",
     "db:migrate:dev": "dotenv -e .env yarn prisma migrate deploy"
