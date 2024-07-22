@@ -21,8 +21,6 @@ jobs:
     - name: Install dependencies
       run: yarn install || { cat ~/.npm/_logs/*-debug.log; exit 1; }
 
-    - name: Install ESLint
-      run: yarn add eslint --dev
 
     - name: Lint code
       run: yarn run lint
