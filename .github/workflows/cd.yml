@@ -41,8 +41,7 @@ jobs:
       # - name: Lint code
       #   run: yarn run lint
 
-      - name: Build application
-        run: yarn run build
+
 
       - name: Tag the version
         id: tag_version
