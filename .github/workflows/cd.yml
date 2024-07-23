@@ -32,31 +32,23 @@ jobs:
         with:
           node-version: '18.x'
 
-      # - name: Install yarn
-      #   run: npm install -g yarn
-
-      # - name: Install dependencies
-      #   run: yarn install || { cat ~/.npm/_logs/*-debug.log; exit 1; }
-
-      # - name: Lint code
-      #   run: yarn run lint
-
-
+      - name: Get the current version
+        id: get_version
+        run: echo "VERSION=$(cat package.json | jq -r .version)" >> $GITHUB_ENV
 
       - name: Tag the version
-        id: tag_version
-        uses: mathieudutour/github-tag-action@v6.0
-        with:
-          custom_tag: 'v1.0.0'  # You can use dynamic versioning if needed
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git tag v${{ env.VERSION }}
+          git push origin v${{ env.VERSION }}
 
       - name: Create GitHub Release
-        id: create_release
         uses: actions/create-release@v1
         with:
-          tag_name: ${{ steps.tag_version.outputs.new_tag }}
-          release_name: Release ${{ steps.tag_version.outputs.new_tag }}
-          body: Release of version ${{ steps.tag_version.outputs.new_tag }}
+          tag_name: v${{ env.VERSION }}
+          release_name: Release v${{ env.VERSION }}
+          body: Release of version v${{ env.VERSION }}
           draft: false
           prerelease: false
           token: ${{ secrets.GITHUB_TOKEN }}
