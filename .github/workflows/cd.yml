@@ -1,0 +1,45 @@
+name: Continuous Delivery
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+  steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18.x'  # This ensures Node.js version > 16.13
+
+      - name: Install yarn
+        run: npm install -g yarn
+
+      - name: Install dependencies
+        run: yarn install || { cat ~/.npm/_logs/*-debug.log; exit 1; }
+
+
+      - name: Lint code
+        run: yarn run lint
+
+      - name: Tag version
+        id: tag_version
+        run: |
+          git tag -a v1.0.${{ github.run_number }} -m "Release ${{ github.run_number }}"
+          git push origin v1.0.${{ github.run_number }}
+
+    - name: Create Release
+      uses: actions/create-release@v1
+      with:
+        tag_name: v1.0.${{ github.run_number }}
+        release_name: Release ${{ github.run_number }}
+        body: |
+          Release notes for ${{ github.run_number }}
+        draft: false
+        prerelease: false
