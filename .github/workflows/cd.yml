@@ -9,37 +9,41 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-  steps:
+    steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '18.x'  # This ensures Node.js version > 16.13
-
-      - name: Install yarn
-        run: npm install -g yarn
+          node-version: '18.x'
 
       - name: Install dependencies
-        run: yarn install || { cat ~/.npm/_logs/*-debug.log; exit 1; }
-
+        run: npm install
 
       - name: Lint code
-        run: yarn run lint
+        run: npm run lint
 
-      - name: Tag version
+      - name: Run tests
+        run: npm test
+
+      - name: Build application
+        run: npm run build
+
+      - name: Tag the version
         id: tag_version
-        run: |
-          git tag -a v1.0.${{ github.run_number }} -m "Release ${{ github.run_number }}"
-          git push origin v1.0.${{ github.run_number }}
+        uses: mathieudutour/github-tag-action@v6.0
+        with:
+          custom_tag: 'v1.0.0'  # You can use dynamic versioning if needed
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Create Release
-      uses: actions/create-release@v1
-      with:
-        tag_name: v1.0.${{ github.run_number }}
-        release_name: Release ${{ github.run_number }}
-        body: |
-          Release notes for ${{ github.run_number }}
-        draft: false
-        prerelease: false
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ steps.tag_version.outputs.new_tag }}
+          release_name: Release ${{ steps.tag_version.outputs.new_tag }}
+          body: Release of version ${{ steps.tag_version.outputs.new_tag }}
+          draft: false
+          prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}
