@@ -32,12 +32,16 @@ jobs:
         with:
           node-version: '18.x'
 
-      - name: Get the current version
+     - name: Get the current version
         id: get_version
         run: echo "VERSION=$(cat package.json | jq -r .version)" >> $GITHUB_ENV
 
       - name: Tag the version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git tag v${{ env.VERSION }}
           git push origin v${{ env.VERSION }}
 
@@ -49,40 +53,5 @@ jobs:
           body: Release of version v${{ env.VERSION }}
           draft: false
           prerelease: false
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-  #     - name: Deploy to server
-  #       if: github.event.inputs.deploy == 'true' || github.event_name == 'release'
-  #       env:
-  #         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-  #         SSH_USER: ${{ secrets.SSH_USER }}
-  #         SSH_HOST: ${{ secrets.SSH_HOST }}
-  #       run: |
-  #         ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $SSH_USER@$SSH_HOST "
-  #         cd /path/to/your/project &&
-  #         git pull &&
-  #         npm install &&
-  #         npm run build &&
-  #         pm2 restart all &&
-  #         echo '$(git rev-parse HEAD)' > ~/.last_deploy_version"
-
-  # rollback:
-  #   if: github.event.inputs.rollback == 'true'
-  #   runs-on: ubuntu-latest
-
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v2
-
-  #     - name: Rollback to previous version
-  #       env:
-  #         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-  #         SSH_USER: ${{ secrets.SSH_USER }}
-  #         SSH_HOST: ${{ secrets.SSH_HOST }}
-  #       run: |
-  #         ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $SSH_USER@$SSH_HOST "
-  #         cd /path/to/your/project &&
-  #         git checkout $(cat ~/.last_deploy_version) &&
-  #         npm install &&
-  #         npm run build &&
-  #         pm2 restart all"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
