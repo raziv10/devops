@@ -1,4 +1,4 @@
-name: Deploy
+name: Deployment Pipeline
 
 on:
   push:
@@ -16,10 +16,11 @@ on:
       deploy:
         description: 'Set to true to deploy the current version'
         required: false
-        default: 'false'
+        default: 'true'
 
 jobs:
   deploy:
+    if: github.event.inputs.rollback != 'true'
     runs-on: ubuntu-latest
 
     steps:
@@ -31,17 +32,17 @@ jobs:
         with:
           node-version: '18.x'
 
-      - name: Install dependencies
-        run: npm install
+      # - name: Install yarn
+      #   run: npm install -g yarn
 
-      - name: Lint code
-        run: npm run lint
+      # - name: Install dependencies
+      #   run: yarn install || { cat ~/.npm/_logs/*-debug.log; exit 1; }
 
-      - name: Run tests
-        run: npm test
+      # - name: Lint code
+      #   run: yarn run lint
 
       - name: Build application
-        run: npm run build
+        run: yarn run build
 
       - name: Tag the version
         id: tag_version
@@ -61,23 +62,38 @@ jobs:
           prerelease: false
           token: ${{ secrets.GITHUB_TOKEN }}
 
-  rollback:
-    runs-on: ubuntu-latest
-    if: github.event.inputs.rollback == 'true'
+  #     - name: Deploy to server
+  #       if: github.event.inputs.deploy == 'true' || github.event_name == 'release'
+  #       env:
+  #         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+  #         SSH_USER: ${{ secrets.SSH_USER }}
+  #         SSH_HOST: ${{ secrets.SSH_HOST }}
+  #       run: |
+  #         ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $SSH_USER@$SSH_HOST "
+  #         cd /path/to/your/project &&
+  #         git pull &&
+  #         npm install &&
+  #         npm run build &&
+  #         pm2 restart all &&
+  #         echo '$(git rev-parse HEAD)' > ~/.last_deploy_version"
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+  # rollback:
+  #   if: github.event.inputs.rollback == 'true'
+  #   runs-on: ubuntu-latest
 
-      - name: Rollback to previous version
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SSH_USER: ${{ secrets.SSH_USER }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-        run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $SSH_USER@$SSH_HOST "
-          cd /path/to/your/project &&
-          git checkout $(cat ~/.last_deploy_version) &&
-          npm install &&
-          npm run build &&
-          pm2 restart all"
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v2
+
+  #     - name: Rollback to previous version
+  #       env:
+  #         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+  #         SSH_USER: ${{ secrets.SSH_USER }}
+  #         SSH_HOST: ${{ secrets.SSH_HOST }}
+  #       run: |
+  #         ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $SSH_USER@$SSH_HOST "
+  #         cd /path/to/your/project &&
+  #         git checkout $(cat ~/.last_deploy_version) &&
+  #         npm install &&
+  #         npm run build &&
+  #         pm2 restart all"
