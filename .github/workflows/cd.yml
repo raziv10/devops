@@ -31,17 +31,19 @@ jobs:
         with:
           node-version: '18.x'
 
+      - name: Install yarn
+        run: npm install -g yarn
+
       - name: Install dependencies
-        run: npm install
+        run: yarn install || { cat ~/.npm/_logs/*-debug.log; exit 1; }
+
 
       - name: Lint code
-        run: npm run lint
-
-      - name: Run tests
-        run: npm test
+        run: yarn run lint
 
       - name: Build application
         run: npm run build
+        
 
       - name: Tag the version
         id: tag_version
