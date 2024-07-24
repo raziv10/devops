@@ -15,25 +15,29 @@ jobs:
 
       - name: Set up SSH key
         run: |
+          echo "Setting up SSH key"
           mkdir -p ~/.ssh
           echo "${{ secrets.EC2_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+          echo "Private key configured"
 
       - name: Test SSH connection
         env:
           SSH_USER: ${{ secrets.SSH_USER }}
           EC2_HOST: ${{ secrets.EC2_HOST }}
         run: |
-          ssh -o StrictHostKeyChecking=no $SSH_USER@$EC2_HOST echo "SSH connection successful"
+          echo "Testing SSH connection..."
+          ssh -v -o StrictHostKeyChecking=no $SSH_USER@$EC2_HOST echo "SSH connection successful"
 
       - name: Deploy to EC2
+        if: success()
         env:
           SSH_USER: ${{ secrets.SSH_USER }}
           EC2_HOST: ${{ secrets.EC2_HOST }}
         run: |
           ssh -o StrictHostKeyChecking=no $SSH_USER@$EC2_HOST "
-          cd /home/ubuntu/ &&
+          cd /home/ubuntu/your-project-directory &&
           git pull origin main &&
           npm install &&
           npm run build &&
