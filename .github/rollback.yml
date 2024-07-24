@@ -1,0 +1,35 @@
+name: Rollback Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      rollback:
+        description: 'Set to true to rollback to the previous deployment'
+        required: true
+        default: 'true'
+
+jobs:
+  rollback:
+    if: github.event.inputs.rollback == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Rollback to previous version
+        env:
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "
+          cd /path/to/your/project &&
+          git checkout $(cat ~/.last_deploy_version) &&
+          npm install &&
+          npm run build &&
+          pm2 restart all"
