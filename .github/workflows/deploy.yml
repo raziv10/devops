@@ -1,16 +1,12 @@
-name: Rollback Pipeline
+name: Deployment Pipeline
 
 on:
-  workflow_dispatch:
-    inputs:
-      rollback:
-        description: 'Set to true to rollback to the previous deployment'
-        required: true
-        default: 'true'
+  push:
+    branches:
+      - main
 
 jobs:
-  rollback:
-    if: github.event.inputs.rollback == 'true'
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -29,14 +25,14 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
 
-      - name: Rollback to previous version
+      - name: Deploy to EC2
         env:
           SSH_USER: ${{ secrets.SSH_USER }}
-          SSH_HOST: ${{ secrets.EC2_HOST }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
         run: |
-          ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "
-          cd /home/ubuntu/your-project-directory &&
-          git checkout $(cat ~/.last_deploy_version) &&
+          ssh -o StrictHostKeyChecking=no $SSH_USER@$EC2_HOST "
+          cd /home/ubuntu/ &&
+          git pull origin main &&
           npm install &&
           npm run build &&
           pm2 restart all"
