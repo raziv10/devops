@@ -23,14 +23,21 @@ jobs:
         id: get_version
         run: echo "VERSION=$(cat package.json | jq -r .version)" >> $GITHUB_ENV
 
-      - name: Tag the version
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git tag v${{ env.VERSION }}
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git v${{ env.VERSION }}
+      - name: Create new tag
+          id: new_tag
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          run: |
+            latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+            if [ -z "$latest_tag" ]; then
+              new_tag=v${{ env.VERSION }}
+            else
+              new_version=$(echo $latest_tag | awk -F. '{print $NF+1}')
+              new_tag=v${{ env.VERSION }}.$new_version
+            fi
+            echo "NEW_TAG=$new_tag" >> $GITHUB_ENV
+            git tag $new_tag
+            git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git $new_tag
 
       - name: Create GitHub Release
         uses: actions/create-release@v1
