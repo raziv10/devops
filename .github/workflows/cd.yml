@@ -24,10 +24,10 @@ jobs:
         run: echo "VERSION=$(cat package.json | jq -r .version)" >> $GITHUB_ENV
 
       - name: Create new tag
-          id: new_tag
-          env:
+        id: new_tag
+        env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          run: |
+        run: |
             latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
             if [ -z "$latest_tag" ]; then
               new_tag=v${{ env.VERSION }}
