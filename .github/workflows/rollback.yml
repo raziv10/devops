@@ -20,7 +20,7 @@ jobs:
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.5.3
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh-private-key: ${{ secrets.EC2_PRIVATE_KEY }}
 
       - name: Rollback to previous version
         env:
@@ -28,7 +28,7 @@ jobs:
           SSH_HOST: ${{ secrets.SSH_HOST }}
         run: |
           ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "
-          cd /path/to/your/project &&
+          cd /home/ubuntu/ &&
           git checkout $(cat ~/.last_deploy_version) &&
           npm install &&
           npm run build &&
