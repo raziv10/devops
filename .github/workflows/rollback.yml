@@ -28,7 +28,7 @@ jobs:
           SSH_HOST: ${{ secrets.SSH_HOST }}
         run: |
           ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "
-          cd /path/to/your/project &&
+          cd /home/ubuntu/ &&
           git checkout $(cat ~/.last_deploy_version) &&
           npm install &&
           npm run build &&
